@@ -13,9 +13,7 @@ Stuff to do:
 """
 
 
-
 #Import the necessary methods from tweepy library
-
 import sys
 import time
 
@@ -31,9 +29,6 @@ import numpy as np
 import pandas
 
 
-
-
-
 def readFromFileA(filename,splitter=',', lineStart = 0, lineEnd = 1000):
     f = open(filename,'r')
     lines_list = f.readlines()
@@ -47,16 +42,13 @@ class MyStreamListener(tweepy.StreamListener):
     def on_status(self, status):
         randIds.append(status.user.id)
 
+# input is a tweet as a single line str.  
+# This function will convert it all to lower case, 
+# remove useless words, and put in the format for the neural network.  
 
-
-
-#input is a tweet as a single line str.  This function will convert it all to lower case, remove useless words, and put in the format for the neural network.  
-#def parseTweet(tweet):    #will make this when I'm working on the nn part of the project.  not needed if using the textblob tool
+# def parseTweet(tweet):    
+# will make this when I'm working on the nn part of the project.  not needed if using the textblob tool
     
-    
-
-
-
 
 if __name__ == '__main__':
     #Variables that contains the user credentials to access Twitter API: these are not real
