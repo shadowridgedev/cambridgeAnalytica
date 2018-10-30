@@ -15,15 +15,24 @@ Stuff to do:
 
 
 #Import the necessary methods from tweepy library
+
 import sys
+import time
+
+# Libraries to pull twitter data
 import tweepy
 from tweepy import OAuthHandler
-import textblob
-import numpy as np
-import time
-import pandas
 from tweepy.streaming import StreamListener
 from tweepy import Stream
+
+# Data and Text Analysis
+import textblob
+import numpy as np
+import pandas
+
+
+
+
 
 def readFromFileA(filename,splitter=',', lineStart = 0, lineEnd = 1000):
     f = open(filename,'r')

@@ -8,20 +8,30 @@ Includes another function compareAPItoSource for testing APIs with source latitu
 More detailed comments are above and within each primary function.  Utility functions are fairly self explanatory.  
 """
 
+import sys
+import time
+
+## Importing data analysis libraries
 import numpy as np
 import pandas as pd
+
+## Importing googlemap libraries
 from googlemaps import Client
 import googlemaps as gmaps
+
+## Importing geo-enconding libraries
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 import geocoder
+
+## Importing time, distance measuring libraries
 from random import random
 from time import sleep
 from geopy.distance import vincenty
+
+##
 import scipy.stats
 from collections import OrderedDict
-import sys
-import time
 
 
 
@@ -37,15 +47,14 @@ def readFromFileA(filename,splitter=',', lineStart = 0, lineEnd = 1000):
     data = np.asarray(my_data)
     return data
     
+## Google -- Converting Address to Coordinate
 def getLatLngGoog(client, addr):
     location = gmaps.geocoding.geocode(client, addr)[0].get('geometry').get('location')
     lat = location.get('lat')
     lng = location.get('lng')
     return lat,lng
 
-def getDistance(latlng1, latlng2):
-    return vincenty(latlng1, latlng2).miles
-    
+## Geopy -- Converting Address to Coordinate 
 def getLatLngGeopy(key, address):  ## key is not used
     geolocator = Nominatim()
     #address =  (house_num + " " + street_name + " " + city + ", " + state_abrv + " " + zip_code) 
@@ -55,13 +64,18 @@ def getLatLngGeopy(key, address):  ## key is not used
         return (location.latitude, location.longitude)
     else:
         return 0
-        
+
+## ArcGIS -- Converting Address to Cooordinate
 def getLatLngArcGIS(key, address):   ##key is not used.  Only present to support googleMaps.  
     g = geocoder.arcgis(address)
     if g.latlng == []:
         return 0
     h = [str(g.latlng[0]), str(g.latlng[1])]
     return h
+
+## Measuring distance between 2 coordinates
+def getDistance(latlng1, latlng2):
+    return vincenty(latlng1, latlng2).miles
     
 
 """
@@ -79,8 +93,8 @@ _fullAddresses is a list of addresses where each line is:
     
     The function returns how long it took in seconds to complete.  This may be useful for comparing APIs to each other. 
 """
+
 def compareAPItoSource(_client, APIfunction, _fullAddresses):   
-    
     
     start_time = time.time()
     lng_lat_pairs_API = []   
@@ -192,10 +206,30 @@ def compareAPItoSource(_client, APIfunction, _fullAddresses):
 This function is really the purpose of this script. Essentially what it does is: 
 For each address in the addresses file, try to get an accurate lng/lat quickly (comparing available data
 from Aristotle/IG to the zip code file data to determine accuracy), but if we can't, we fetch it from ArcGIS.
-addresses is an array of addresses each in the form 
-    , address_id, voter_id, AddressLine, ExtraAddressLine, HouseNumber, PrefixDirection, StreetName, Designator, SuffixDirection, ApartmentNum, Zip, ZipPlus4, City, County, CongressionalDistrict, State, latitude, longitude, ar_latitude, ar_longitude
-    only lines 5, 7, 8, 13, 16 are used though, the rest can be blank.  
-    lines 17,18,19,20 are optional, they are the data from Aristotle and IG lat/lng data.
+addresses is an array of addresses each in the form: 
+    1. address_id, 
+    2. voter_id, ***
+    3. AddressLine, 
+    4. ExtraAddressLine, 
+    5. HouseNumber, ***
+    6. PrefixDirection, 
+    7. StreetName, ***
+    8. Designator, ***
+    9. SuffixDirection,
+    10. ApartmentNum, 
+    11. Zip, 
+    12. ZipPlus4, 
+    13. City, ***
+    14. County, 
+    15. CongressionalDistrict, 
+    16. State ***
+    17. latitude
+    18. longitude
+    19. ar_latitude
+    20. ar_longitude
+
+only lines 5, 7, 8, 13, 16 are used though, the rest can be blank.  
+lines 17,18,19,20 are optional, they are the data from Aristotle and IG lat/lng data.
     
 _zips is an array of zip codes in the form:
 zip, city, state, latitude, longitude, timezone, dst
@@ -208,6 +242,7 @@ latlngFunc is the function you want to use to fetch lat/lngs that are not suppli
 The function returns an array which adds 2 extra columns to the original addresses array.  The extra columns are the accurate lat/lngs. 
 Output is a little confusing, but the important bits are the fetch rate (basically dictates how quickly the function goes),
     and the errors (which is going to be the number of address lines which we couldn't get accurate data for from any source.)
+
 ********THINGS THAT CAN BE ADDED*************
 Right now the exception clause basically just says that the latlngFunc failed to find the address and give a valid lat/lng.
     Instead, it could use googleMaps to fill in the field.  It would have to be limited to 2500 uses in a day, but at the average hit rate for 
